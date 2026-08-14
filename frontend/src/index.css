@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink: #14181f;
+  --slate: #2a3341;
+  --steel: #4a5568;
+  --fog: #e4e7eb;
+  --paper: #f3f4f6;
+  --hazard: #f2c230;
+  --go: #2e9e6b;
+  --warn: #e8a317;
+  --stop: #d6453d;
+}
+
+body {
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+h1, h2, h3, .display {
+  font-family: 'Archivo Condensed', 'Archivo', sans-serif;
+  letter-spacing: 0.01em;
+}
+
+.mono { font-family: 'IBM Plex Mono', monospace; }
+
+/* Hazard stripe — the one decorative flourish, used only on the sidebar edge. */
+.hazard-edge {
+  background: repeating-linear-gradient(
+    45deg, var(--hazard), var(--hazard) 6px,
+    var(--ink) 6px, var(--ink) 12px
+  );
+}
+
+*:focus-visible {
+  outline: 2px solid var(--hazard);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
