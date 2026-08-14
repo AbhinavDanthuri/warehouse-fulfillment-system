@@ -1,38 +1,36 @@
 package com.abhinav.warehouse.controller;
 
-import com.abhinav.warehouse.repository.StockRepository;
+import com.abhinav.warehouse.dto.StockAdjustRequest;
+import com.abhinav.warehouse.dto.StockResponse;
+import com.abhinav.warehouse.service.StockService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/stock")
 @RequiredArgsConstructor
 public class StockController {
 
-    private final StockRepository stockRepository;
+    private final StockService stockService;
 
     @GetMapping
-    public List<Map<String, Object>> all() {
-        return stockRepository.findAll().stream()
-                .map(s -> Map.<String, Object>of(
-                        "warehouse", s.getWarehouse().getName(),
-                        "sku", s.getProduct().getSku(),
-                        "quantity", s.getQuantity(),
-                        "version", s.getVersion()))
-                .toList();
+    public List<StockResponse> list() {
+        return stockService.findAll().stream().map(StockResponse::from).toList();
     }
 
     @GetMapping("/low")
-    public List<Map<String, Object>> low() {
-        return stockRepository.findLowStock().stream()
-                .map(s -> Map.<String, Object>of(
-                        "warehouse", s.getWarehouse().getName(),
-                        "sku", s.getProduct().getSku(),
-                        "quantity", s.getQuantity(),
-                        "threshold", s.getProduct().getLowStockThreshold()))
-                .toList();
+    public List<StockResponse> low() {
+        return stockService.findLowStock().stream().map(StockResponse::from).toList();
+    }
+
+    /** Creates the row if this warehouse/product pair has none yet. */
+    @PutMapping
+    @PreAuthorize("hasAnyRole('ADMIN','WAREHOUSE_MANAGER')")
+    public StockResponse setQuantity(@Valid @RequestBody StockAdjustRequest req) {
+        return StockResponse.from(stockService.setQuantity(req));
     }
 }
