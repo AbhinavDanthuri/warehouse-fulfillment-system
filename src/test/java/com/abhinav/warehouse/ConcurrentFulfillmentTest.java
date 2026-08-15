@@ -6,6 +6,7 @@ import com.abhinav.warehouse.entity.*;
 import com.abhinav.warehouse.repository.*;
 import com.abhinav.warehouse.service.FulfillmentService;
 import com.abhinav.warehouse.service.OrderService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,13 +46,11 @@ class ConcurrentFulfillmentTest {
 
     Long productId;
     Long stockId;
+    Long warehouseId;
 
     @BeforeEach
     void setUp() {
         // Fresh, isolated fixtures so the seeded demo data cannot interfere.
-        logRepository.deleteAll();
-        orderRepository.deleteAll();
-
         Warehouse wh = warehouseRepository.save(Warehouse.builder()
                 .name("Contention Test WH " + System.nanoTime())
                 .city("Hyderabad")
@@ -69,6 +68,25 @@ class ConcurrentFulfillmentTest {
 
         this.productId = product.getId();
         this.stockId = stock.getId();
+        this.warehouseId = wh.getId();
+    }
+
+    /**
+     * Tests own their fixtures. Without this the contention warehouses and SKUs
+     * accumulate in the database and show up in the running application's UI,
+     * which makes the app look broken to anyone who runs the test suite.
+     */
+    @AfterEach
+    void tearDown() {
+        // Delete ONLY what this test created. deleteAll() here would wipe the
+        // seeded warehouses and products the running app depends on.
+        // Order matters: foreign keys point logs -> orders -> items, and
+        // stock -> warehouse/product.
+        logRepository.deleteAll();
+        orderRepository.deleteAll();
+        stockRepository.findById(stockId).ifPresent(stockRepository::delete);
+        productRepository.findById(productId).ifPresent(productRepository::delete);
+        warehouseRepository.findById(warehouseId).ifPresent(warehouseRepository::delete);
     }
 
     @Test
